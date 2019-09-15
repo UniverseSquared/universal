@@ -64,6 +64,14 @@ gpu.fill(1, 1, w, h, " ")
 local config = loadConfig()
 _OSENV.config = config
 
+local resolution = config.resolution
+
+if resolution == "max" or resolution == nil then
+    resolution = { gpu.maxResolution() }
+end
+
+gpu.setResolution(resolution[1], resolution[2])
+
 status("Loading system libraries...")
 loadLibraries(config)
 

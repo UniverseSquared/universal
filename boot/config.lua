@@ -1,4 +1,5 @@
 return {
     requirePath = { "/lib/?.lua" },
-    path = { "/bin/?.lua" }
+    path = { "/bin/?.lua" },
+    resolution = "max"
 }
