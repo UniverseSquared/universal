@@ -1,14 +1,16 @@
-local event = {
+local event = {}
+
+_OSENV.event = {
     timers = {}
 }
 
 local function updateTimers()
-    for k, timer in pairs(event.timers) do
+    for k, timer in pairs(_OSENV.event.timers) do
         if computer.uptime() >= timer.started + timer.time then
             timer.callback()
             
             if timer.type == "after" then
-                table.remove(event.timers, k)
+                table.remove(_OSENV.event.timers, k)
             elseif timer.type == "every" then
                 timer.started = computer.uptime()
             end
@@ -17,7 +19,7 @@ local function updateTimers()
 end
 
 function event.after(time, callback)
-    table.insert(event.timers, {
+    table.insert(_OSENV.event.timers, {
         type = "after",
         started = computer.uptime(),
         time = time,
@@ -26,7 +28,7 @@ function event.after(time, callback)
 end
 
 function event.every(time, callback)
-    table.insert(event.timers, {
+    table.insert(_OSENV.event.timers, {
         type = "every",
         started = computer.uptime(),
         time = time,
@@ -40,7 +42,7 @@ function event.pull(timeout, filter)
 
     repeat
         local closestTimer = math.huge
-        for _, timer in pairs(event.timers) do
+        for _, timer in pairs(_OSENV.event.timers) do
             closestTimer = math.min(closestTimer, timer.started + timer.time)
         end
 
