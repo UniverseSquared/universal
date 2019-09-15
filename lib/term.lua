@@ -74,10 +74,14 @@ function term.read()
                 term.setCursorPos(_OSENV.term.x - 1)
             end
         else
-            local char = string.char(event[3])
+            local code = event[3]
 
-            term.write(char)
-            buffer = buffer .. char
+            if code >= 0x20 and code <= 0x7E then
+                local char = string.char(event[3])
+
+                term.write(char)
+                buffer = buffer .. char
+            end
         end
     end
 
