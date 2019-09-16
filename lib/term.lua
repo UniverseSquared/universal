@@ -63,25 +63,30 @@ function term.read()
     local buffer = ""
 
     while true do
-        local event = event.pull(nil, { "key_down" })
+        local event = event.pull(nil, { "key_down", "clipboard" })
         
-        if event[4] == 0x1C then -- enter
-            break
-        elseif event[4] == 0x0E then -- backspace
-            if #buffer > 0 then
-                buffer = buffer:sub(1, #buffer - 1)
-                gpu.set(startX + #buffer, _OSENV.term.y, ' ')
-                term.setCursorPos(_OSENV.term.x - 1)
-            end
-        else
-            local code = event[3]
+        if event[1] == "key_down" then
+            if event[4] == 0x1C then -- enter
+                break
+            elseif event[4] == 0x0E then -- backspace
+                if #buffer > 0 then
+                    buffer = buffer:sub(1, #buffer - 1)
+                    gpu.set(startX + #buffer, _OSENV.term.y, ' ')
+                    term.setCursorPos(_OSENV.term.x - 1)
+                end
+            else
+                local code = event[3]
 
-            if code >= 0x20 and code <= 0x7E then
-                local char = string.char(event[3])
+                if code >= 0x20 and code <= 0x7E then
+                    local char = string.char(event[3])
 
-                term.write(char)
-                buffer = buffer .. char
+                    term.write(char)
+                    buffer = buffer .. char
+                end
             end
+        elseif event[1] == "clipboard" then
+            buffer = buffer .. event[3]
+            term.write(event[3])
         end
     end
 
