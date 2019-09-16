@@ -39,4 +39,17 @@ function text.serialize(value, indent)
     end
 end
 
+function text.split(str, sep)
+    checkArg(1, str, "string")
+    checkArg(2, sep, "string")
+
+    local sep, fields = sep or '/', {}
+    local pattern = string.format("([^%s]+)", sep)
+    str:gsub(pattern, function(c)
+        table.insert(fields, c)
+    end)
+    return fields
+end
+
+
 return text

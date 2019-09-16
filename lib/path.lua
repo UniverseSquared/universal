@@ -1,17 +1,6 @@
 -- TODO: function to calculate difference between paths
+local text = require("text")
 local path = {}
-
-local function split(str, sep)
-    checkArg(1, str, "string")
-    checkArg(2, sep, "string")
-
-    local sep, fields = sep or '/', {}
-    local pattern = string.format("([^%s]+)", sep)
-    str:gsub(pattern, function(c)
-        table.insert(fields, c)
-    end)
-    return fields
-end
 
 function path.parse(path)
     checkArg(1, path, "string")
@@ -20,7 +9,7 @@ function path.parse(path)
         return {}
     end
     
-    local parts = split(path, '/')
+    local parts = text.split(path, '/')
     local result = {}
     
     if path:sub(1, 1) ~= '/' then
