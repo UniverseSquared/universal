@@ -53,7 +53,7 @@ function term.write(str)
 end
 
 function term.print(str)
-    local str = str or ""
+    local str = tostring(str) or ""
     
     term.write(str .. '\n')
 end
