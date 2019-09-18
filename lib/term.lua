@@ -33,7 +33,10 @@ end
 -- end)
 
 function term.setCursorPos(x, y)
-    _OSENV.term.x = x or _OSENV.term.x
+    checkArg(1, x, "number")
+    checkArg(2, y, "number", "nil")
+
+    _OSENV.term.x = x
     _OSENV.term.y = y or _OSENV.term.y
 end
 
