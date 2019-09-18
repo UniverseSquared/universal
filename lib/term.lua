@@ -8,6 +8,7 @@ _OSENV.term = _OSENV.term or {
 }
 
 local function roundToNearest(n, multiple)
+    local n = n == 0 and 1 or n
     local remainder = n % multiple
 
     if remainder == 0 then
