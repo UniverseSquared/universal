@@ -7,6 +7,16 @@ _OSENV.term = _OSENV.term or {
     x = 1, y = 1
 }
 
+local function roundToNearest(n, multiple)
+    local remainder = n % multiple
+
+    if remainder == 0 then
+        return n
+    end
+
+    return n + multiple - remainder
+end
+
 -- event.every(0.5, function()
 --     local cursorVisible = not _OSENV.term.cursorVisible
 
@@ -44,7 +54,8 @@ function term.write(str)
         elseif c == '\r' then
             term.setCursorPos(1)
         elseif c == '\t' then
-            term.write('    ')
+            local n = roundToNearest(_OSENV.term.x, 8) - _OSENV.term.x
+            term.write(string.rep(' ', n))
         else
             gpu.set(_OSENV.term.x, _OSENV.term.y, c)
             term.setCursorPos(_OSENV.term.x + 1)
