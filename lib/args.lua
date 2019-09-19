@@ -73,27 +73,35 @@ function args.parse(argList, options, programName)
         end
     end
 
-    local function isValidArg(arg, argType)
-        for _, option in pairs(options) do
-            if argType == "long" and option.long == arg then
-                return true
-            elseif argType == "short" and option.short == arg then
-                return true
-            end
-        end
-        
-        return false
-    end
-
     for _, arg in pairs(argList) do
         local argType = getArgType(arg)
         local argName = arg:sub(argType == "long" and 3 or 2)
-        if argType ~= nil then
-            if isValidArg(argName, argType) then
-                parsed[argName] = true
-            else
-                return false, programName .. ": Invalid argument '" .. argName .. "'"
+
+        local option
+        for _, opt in pairs(options) do
+            if argType == "short" and opt.short == argName then
+                option = opt
+            elseif argType == "long" and opt.long == argName then
+                option = opt
             end
+        end
+
+        if not option then
+            return false, programName .. ": Invalid argument '" .. arg .. "'"
+        end
+
+        if argType ~= nil then
+            if parsed[option.short] then
+                return false, programName .. ": Duplicate option '" .. arg .. "'"
+            end
+
+            parsed[option.short] = true
+        end
+    end
+
+    for _, option in pairs(options) do
+        if not option.optional and not parsed[option.short] then
+            return false, args.generateHelp(argList, options, programName)
         end
     end
 
