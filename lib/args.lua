@@ -1,6 +1,20 @@
 local text = require("text")
 local args = {}
 
+local function cloneTable(table)
+    local output = {}
+    
+    for k, v in pairs(table) do
+        if type(v) == "table" then
+            output[k] = cloneTable(v)
+        else
+            output[k] = v
+        end
+    end
+
+    return output
+end
+
 function args.generateHelp(argList, options, programName)
     local buffer = "Usage: " .. programName .. " "
     
@@ -44,6 +58,46 @@ function args.generateHelp(argList, options, programName)
     end
 
     return buffer:gsub("{gap}", string.rep(' ', longest + 2))
+end
+
+function args.parse(argList, options, programName)
+    local parsed = {}
+    
+    local function getArgType(arg)
+        if arg:sub(1, 3) == "---" then
+            return nil
+        elseif arg:sub(1, 2) == "--" then
+            return "long"
+        elseif arg:sub(1, 1) == "-" then
+            return "short"
+        end
+    end
+
+    local function isValidArg(arg, argType)
+        for _, option in pairs(options) do
+            if argType == "long" and option.long == arg then
+                return true
+            elseif argType == "short" and option.short == arg then
+                return true
+            end
+        end
+        
+        return false
+    end
+
+    for _, arg in pairs(argList) do
+        local argType = getArgType(arg)
+        local argName = arg:sub(argType == "long" and 3 or 2)
+        if argType ~= nil then
+            if isValidArg(argName, argType) then
+                parsed[argName] = true
+            else
+                return false, programName .. ": Invalid argument '" .. argName .. "'"
+            end
+        end
+    end
+
+    return true, parsed
 end
 
 return args
