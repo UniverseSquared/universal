@@ -61,8 +61,11 @@ function args.generateHelp(argList, options, programName)
 end
 
 function args.parse(argList, options, programName)
-    local parsed = {}
-    
+    local parsed = {
+        options = {},
+        others = {}
+    }
+
     local function getArgType(arg)
         if arg:sub(1, 3) == "---" then
             return nil
@@ -75,32 +78,37 @@ function args.parse(argList, options, programName)
 
     for _, arg in pairs(argList) do
         local argType = getArgType(arg)
-        local argName = arg:sub(argType == "long" and 3 or 2)
 
-        local option
-        for _, opt in pairs(options) do
-            if argType == "short" and opt.short == argName then
-                option = opt
-            elseif argType == "long" and opt.long == argName then
-                option = opt
-            end
-        end
+        if argType == nil then
+            table.insert(parsed.others, arg)
+        else
+            local argName = arg:sub(argType == "long" and 3 or 2)
 
-        if not option then
-            return false, programName .. ": Invalid argument '" .. arg .. "'"
-        end
-
-        if argType ~= nil then
-            if parsed[option.short] then
-                return false, programName .. ": Duplicate option '" .. arg .. "'"
+            local option
+            for _, opt in pairs(options) do
+                if argType == "short" and opt.short == argName then
+                    option = opt
+                elseif argType == "long" and opt.long == argName then
+                    option = opt
+                end
             end
 
-            parsed[option.short] = true
+            if not option then
+                return false, programName .. ": Invalid argument '" .. arg .. "'"
+            end
+
+            if argType ~= nil then
+                if parsed.options[option.short] then
+                    return false, programName .. ": Duplicate option '" .. arg .. "'"
+                end
+
+                parsed.options[option.short] = true
+            end
         end
     end
 
     for _, option in pairs(options) do
-        if not option.optional and not parsed[option.short] then
+        if not option.optional and not parsed.options[option.short] then
             return false, args.generateHelp(argList, options, programName)
         end
     end
