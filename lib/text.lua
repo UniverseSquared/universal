@@ -1,16 +1,26 @@
 local text = {}
 
+local function tableSize(table)
+    local size = 0
+
+    for _, _ in pairs(table) do
+        size = size + 1
+    end
+
+    return size
+end
+
 function text.serialize(value, indent)
     local t = type(value)
 
     if t == "string" then
         return '"' .. value .. '"'
-    elseif t == "number" then
+    elseif t == "number" or t == "boolean" then
         return tostring(value)
     elseif t == "nil" then
         return "nil"
     elseif t == "table" then
-        if #value == 0 then
+        if tableSize(value) == 0 then
             return "{}"
         end
 
