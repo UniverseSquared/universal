@@ -10,6 +10,10 @@ function text.serialize(value, indent)
     elseif t == "nil" then
         return "nil"
     elseif t == "table" then
+        if #value == 0 then
+            return "{}"
+        end
+
         local buffer = "{\n"
         local indent = indent or 2
 
