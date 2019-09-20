@@ -34,13 +34,13 @@ while true do
 
                 local module, reason = loadfile(fs, programPath)
                 if not module then
-                    error(reason)
+                    term.error(reason)
                     break
                 end
 
                 local ok, err = pcall(module, table.unpack(parts))
                 if not ok then
-                    error(err)
+                    term.error(err)
                 end
 
                 break

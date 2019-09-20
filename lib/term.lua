@@ -33,6 +33,13 @@ end
 --     _OSENV.term.cursorVisible = cursorVisible
 -- end)
 
+function term.error(error)
+    gpu.setForeground(0xFF0000)
+    term.print("Error: " .. error)
+    term.print(debug.traceback())
+    gpu.setForeground(0xFFFFFF)
+end
+
 function term.setCursorPos(x, y)
     checkArg(1, x, "number")
     checkArg(2, y, "number", "nil")
