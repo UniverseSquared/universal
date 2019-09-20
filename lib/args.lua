@@ -15,7 +15,7 @@ local function cloneTable(table)
     return output
 end
 
-function args.generateHelp(argList, options, programName)
+function args.generateHelp(options, programName)
     local buffer = "Usage: " .. programName .. " "
     
     for _, option in pairs(options) do
@@ -60,60 +60,95 @@ function args.generateHelp(argList, options, programName)
     return buffer:gsub("{gap}", string.rep(' ', longest + 2))
 end
 
-function args.parse(argList, options, programName)
-    local parsed = {
-        options = {},
-        others = {}
-    }
+-- Wrapped by args.parse()
+local function _parse(input, options, programName)
+    local argList = { value = "", switches = {} }
+    local namesMap = {}
+    local types = { long = "long", short = "short", text = "text" }
 
-    local function getArgType(arg)
-        if arg:sub(1, 3) == "---" then
-            return nil
-        elseif arg:sub(1, 2) == "--" then
-            return "long"
-        elseif arg:sub(1, 1) == "-" then
-            return "short"
+    local switchName
+    local switchValue = {}
+
+    local function getArg(argument)
+        if argument:match("%-%-[^-]+") then
+            return types.long, argument:sub(3)
+        elseif argument:match("%-[^-]+") then
+            return types.short, argument:sub(2)
         end
+
+        return types.text, argument
     end
 
-    for _, arg in pairs(argList) do
-        local argType = getArgType(arg)
-
-        if argType == nil then
-            table.insert(parsed.others, arg)
+    local function flushValue()
+        if switchName == nil then
+            argList.value = table.concat(switchValue, " ")
         else
-            local argName = arg:sub(argType == "long" and 3 or 2)
+            local acceptsMultiple = type(argList.switches[switchName]) == "table"
 
-            local option
-            for _, opt in pairs(options) do
-                if argType == "short" and opt.short == argName then
-                    option = opt
-                elseif argType == "long" and opt.long == argName then
-                    option = opt
-                end
-            end
-
-            if not option then
-                return false, programName .. ": Invalid argument '" .. arg .. "'"
-            end
-
-            if argType ~= nil then
-                if parsed.options[option.short] then
-                    return false, programName .. ": Duplicate option '" .. arg .. "'"
+            if acceptsMultiple then
+                table.concat(argList.switches[switchName], table.concat(switchValue, " "))
+            else
+                if argList.switches[switchName] ~= nil then
+                    error({ code = 1, error = programName .. ": Duplicate option '" .. switchName .. "' (accepts single values only)" })
                 end
 
-                parsed.options[option.short] = true
+                argList.switches[switchName] = type(switchValue) == "table" and table.concat(switchValue, " ") or true
             end
         end
     end
 
     for _, option in pairs(options) do
-        if not option.optional and not parsed.options[option.short] then
-            return false, args.generateHelp(argList, options, programName)
+        local key = option.short or option.long
+
+        if option.acceptsMultiple then
+            argList.switches[key] = {}
+        else
+            argList.switches[key] = nil
+        end
+
+        if option.short and option.long then
+            namesMap[option.short] = option.long
+            namesMap[option.long] = option.short
         end
     end
 
-    return true, parsed
+    for _, arg in pairs(input) do
+        local type, value = getArg(arg)
+
+        if type == types.long and namesMap[value] then
+            type = types.short
+            value = namesMap[value]
+        elseif type == types.long then
+            flushValue()
+            switchName = value
+        end
+
+        if type == types.short then
+            flushValue()
+            switchName = value
+        end
+
+        if type == types.text then
+            table.insert(switchValue, value)
+        end
+    end
+
+    flushValue()
+
+    for _, option in pairs(options) do
+        local key = option.short or option.long
+
+        if argList.switches[key] == nil and not option.optional then
+            error({ code = 2, error = args.generateHelp(options, programName) })
+        end
+    end
+
+    return argList
+end
+
+-- Wrap errors in _parse
+function args.parse(argList, options, programName)
+    return pcall(_parse, argList, options, programName)
 end
 
 return args
