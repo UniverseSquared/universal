@@ -27,8 +27,8 @@ while true do
             return
         end
 
-        for _, path in pairs(binPath) do
-            local programPath = path:gsub("?", program)
+        for _, searchPath in pairs(binPath) do
+            local programPath = path.resolve(searchPath):gsub("?", program)
             if invoke(fs, "exists", programPath) then
                 found = true
 

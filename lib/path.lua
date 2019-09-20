@@ -28,6 +28,10 @@ function path.parse(path)
     return result
 end
 
+function path.resolve(p)
+    return path.stringify(path.parse(p))
+end
+
 function path.stringify(parts)
     checkArg(1, parts, "table")
 

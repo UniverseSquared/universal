@@ -14,7 +14,7 @@ if #args < 2 then
 end
 
 local mode = args[1]
-local path = path.stringify(path.parse(args[2]))
+local path = path.resolve(args[2])
 
 if mode == "-r" then
     local handle, reason = fs.open(path, 'w')

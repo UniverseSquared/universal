@@ -9,7 +9,7 @@ if #args < 1 then
 end
 
 for _, file in pairs(args) do
-    local path = path.stringify(path.parse(file))
+    local path = path.resolve(file)
 
     if not fs.exists(path) then
         term.print(path .. ": no such file or directory")

@@ -23,7 +23,7 @@ end
 
 local url = args[1]
 local destination = args[2] or getFilename(url)
-destination = path.stringify(path.parse(destination))
+destination = path.resolve(destination)
 
 -- TODO: Support HTTP header Content-Disposition: filename="default_filename.txt"
 local handle = internet.request(url)
