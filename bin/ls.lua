@@ -17,7 +17,7 @@ end
 local filteredList = {}
 
 for _, file in ipairs(list) do
-    if file:sub(1, 1) ~= '.' or parsedArgs.options.a then
+    if file:sub(1, 1) ~= '.' or parsedArgs.switches.a then
         table.insert(filteredList, file)
     end
 end
